@@ -3,6 +3,8 @@ import 'dart:convert';
 import 'package:busca_gif/widget/custon_loading.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
+import 'package:share/share.dart';
+import 'package:transparent_image/transparent_image.dart';
 
 import 'gif_page.dart';
 
@@ -22,7 +24,7 @@ class _HomePageState extends State<HomePage> {
   Future<Map> _getGifs() async {
     http.Response response;
 
-    if (_search == null || _search == '')
+    if (_search == null || _search.isEmpty)
       response = await http.get(
           "https://api.giphy.com/v1/gifs/trending?api_key=CXY8vxhGo5C3ojIDlnBZI81Zb33KOBVa&limit=$_gifsPerPage&rating=g");
     else
@@ -120,8 +122,10 @@ class _GifGridWidget extends StatelessWidget {
         ),
         itemCount: snapshot.data["data"].length,
         itemBuilder: (context, index) => GestureDetector(
-          child: Image.network(
-            snapshot.data["data"][index]["images"]["fixed_height"]["url"],
+          child: FadeInImage.memoryNetwork(
+            placeholder: kTransparentImage,
+            image: snapshot.data["data"][index]["images"]["fixed_height"]
+                ["url"],
             height: 300.0,
             fit: BoxFit.cover,
           ),
@@ -131,6 +135,10 @@ class _GifGridWidget extends StatelessWidget {
                 MaterialPageRoute(
                   builder: (context) => GifPage(snapshot.data["data"][index]),
                 ));
+          },
+          onLongPress: () {
+            Share.share(
+                snapshot.data["data"][index]["images"]["fixed_height"]["url"]);
           },
         ),
       );
